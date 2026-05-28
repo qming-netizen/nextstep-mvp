@@ -6,11 +6,19 @@ import { useApp } from "@/context/AppContext";
 
 export default function RootPage() {
   const router = useRouter();
-  const { onboardingComplete } = useApp();
+  const { onboardingComplete, demo } = useApp();
 
   useEffect(() => {
-    router.replace(onboardingComplete ? "/home" : "/onboarding");
-  }, [onboardingComplete, router]);
+    if (!onboardingComplete) {
+      router.replace("/onboarding");
+      return;
+    }
+    if (!demo.canvasSynced) {
+      router.replace("/canvas-sync");
+      return;
+    }
+    router.replace("/home");
+  }, [onboardingComplete, demo.canvasSynced, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F8F6FC]">

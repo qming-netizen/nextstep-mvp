@@ -1,19 +1,48 @@
 import type { FocusRecommendation, Task } from "./types";
 
+export const canvasDeadlines = [
+  {
+    id: "bio",
+    course: "BIOL 204",
+    title: "Lab report — enzyme kinetics",
+    due: "Mon, 11:59 PM",
+    urgent: true,
+  },
+  {
+    id: "calc",
+    course: "MATH 152",
+    title: "Quiz 3 prep — derivatives",
+    due: "Tue, 5:00 PM",
+    urgent: false,
+  },
+  {
+    id: "hist",
+    course: "HIST 110",
+    title: "Discussion post — Ch. 12",
+    due: "Wed, 9:00 AM",
+    urgent: false,
+  },
+];
+
 export const focusRecommendation: FocusRecommendation = {
   subject: "Biology",
   reasoning:
-    "Your lab report is due tomorrow and you've made the most progress here this week.",
+    "Due in 27 hours, rubric already reviewed, and it's the anchor of this week's deadline cluster. Finishing methods tonight unlocks results tomorrow without a late-night scramble.",
   workloadEstimate: "~45 min · 5 micro-steps",
   focusWindow: "7:30 – 8:15 PM",
+  whyFirst: [
+    "Closest deadline in your Canvas cluster",
+    "You already completed step 1 (rubric review)",
+    "Partial credit risk is highest if this slips",
+  ],
 };
 
 export const tasks: Task[] = [
   {
     id: "bio-lab",
-    title: "Finish Biology lab report",
+    title: "Lab report — enzyme kinetics",
     subject: "Biology",
-    dueLabel: "Due tomorrow",
+    dueLabel: "Due Mon, 11:59 PM",
     priority: 1,
     estimatedMinutes: 45,
     status: "pending",
@@ -22,14 +51,14 @@ export const tasks: Task[] = [
       { id: "s2", title: "Draft methods section", estimatedMinutes: 12, status: "pending" },
       { id: "s3", title: "Write results paragraph", estimatedMinutes: 10, status: "pending" },
       { id: "s4", title: "Add figures & captions", estimatedMinutes: 10, status: "pending" },
-      { id: "s5", title: "Proofread & export PDF", estimatedMinutes: 5, status: "pending" },
+      { id: "s5", title: "Proofread & submit to Canvas", estimatedMinutes: 5, status: "pending" },
     ],
   },
   {
     id: "calc-hw",
-    title: "Calculus problem set 7",
+    title: "Quiz 3 prep — derivatives",
     subject: "Calculus",
-    dueLabel: "Due Friday",
+    dueLabel: "Due Tue, 5:00 PM",
     priority: 2,
     estimatedMinutes: 60,
     status: "pending",
@@ -43,74 +72,92 @@ export const tasks: Task[] = [
   },
   {
     id: "hist-reading",
-    title: "History reading — Ch. 12",
+    title: "Discussion post — Ch. 12",
     subject: "History",
-    dueLabel: "Flexible",
+    dueLabel: "Due Wed, 9:00 AM",
     priority: 3,
     estimatedMinutes: 35,
-    status: "missed",
+    status: "pending",
     steps: [
       { id: "h1", title: "Preview section headings", estimatedMinutes: 5, status: "pending" },
       { id: "h2", title: "Read pp. 240–255", estimatedMinutes: 20, status: "pending" },
       { id: "h3", title: "Note 3 key themes", estimatedMinutes: 5, status: "pending" },
-      { id: "h4", title: "Write discussion question", estimatedMinutes: 3, status: "pending" },
-      { id: "h5", title: "Save highlights to Notion", estimatedMinutes: 2, status: "pending" },
+      { id: "h4", title: "Draft discussion response", estimatedMinutes: 3, status: "pending" },
+      { id: "h5", title: "Post to Canvas discussion", estimatedMinutes: 2, status: "pending" },
     ],
   },
 ];
 
-export const todayStats = {
+export const todayStatsInitial = {
+  completed: 1,
+  total: 5,
+  momentum: 42,
+  streak: 3,
+};
+
+export const todayStatsAfterFocus = {
   completed: 2,
   total: 5,
-  momentum: 68,
+  momentum: 61,
   streak: 4,
 };
 
-export const weeklyProgress = [
-  { day: "Mon", value: 45 },
-  { day: "Tue", value: 72 },
-  { day: "Wed", value: 58 },
-  { day: "Thu", value: 85 },
-  { day: "Fri", value: 40 },
-  { day: "Sat", value: 20 },
+export const weeklyProgressInitial = [
+  { day: "Mon", value: 55 },
+  { day: "Tue", value: 48 },
+  { day: "Wed", value: 62 },
+  { day: "Thu", value: 40 },
+  { day: "Fri", value: 35 },
+  { day: "Sat", value: 25 },
+  { day: "Sun", value: 42 },
+];
+
+export const weeklyProgressAfterFocus = [
+  { day: "Mon", value: 55 },
+  { day: "Tue", value: 48 },
+  { day: "Wed", value: 62 },
+  { day: "Thu", value: 40 },
+  { day: "Fri", value: 35 },
+  { day: "Sat", value: 25 },
   { day: "Sun", value: 68 },
 ];
 
 export const focusPlanBlocks = [
-  { time: "7:30 PM", title: "Biology lab report", duration: "45 min", active: true },
-  { time: "8:20 PM", title: "Short break", duration: "10 min", active: false },
-  { time: "8:30 PM", title: "Calculus — warm-up only", duration: "20 min", active: false },
+  { time: "7:30 PM", title: "Biology — draft methods", duration: "45 min", active: true },
+  { time: "8:20 PM", title: "Rest & water", duration: "10 min", active: false },
+  { time: "8:30 PM", title: "Calculus — 4 warm-up problems", duration: "20 min", active: false },
 ];
 
 export const recoveryOptions = [
   {
     id: "lighten",
     title: "Lighten tonight",
-    description: "Keep one focus block. Move the rest to flexible slots.",
+    description: "One 30-minute Biology block. Pause Calculus until Tuesday.",
     icon: "feather" as const,
   },
   {
     id: "move",
     title: "Move flexible tasks",
-    description: "Shift History reading to tomorrow morning.",
+    description: "Shift History discussion draft to Monday morning.",
     icon: "calendar" as const,
   },
   {
     id: "protect",
-    title: "Protect focus time",
-    description: "Block 45 min with no notifications for Biology.",
+    title: "Protect recovery time",
+    description: "Block 30 min for Biology only — no guilt about the rest.",
     icon: "shield" as const,
   },
   {
     id: "rebuild",
-    title: "Rebuild tomorrow",
-    description: "Start fresh with a lighter, realistic plan.",
+    title: "Rebuild Monday calmly",
+    description: "Spread the cluster across Mon–Wed with lighter evenings.",
     icon: "sunrise" as const,
   },
 ];
 
 export const updatedRecoveryPlan = [
-  { time: "Tonight", task: "Biology lab report (lightened)", duration: "30 min" },
-  { time: "Tomorrow 9 AM", task: "History reading — Ch. 12", duration: "35 min" },
-  { time: "Tomorrow 4 PM", task: "Calculus problem set (partial)", duration: "25 min" },
+  { time: "Tonight (optional)", task: "Biology methods — shortened", duration: "30 min" },
+  { time: "Mon, 9:00 AM", task: "History discussion draft", duration: "35 min" },
+  { time: "Mon, 4:00 PM", task: "Calculus quiz prep — partial", duration: "25 min" },
+  { time: "Tue evening", task: "Biology results & figures", duration: "40 min" },
 ];

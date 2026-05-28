@@ -15,6 +15,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScrollArea } from "@/components/ScrollArea";
 import { tasks } from "@/lib/mock-data";
+import { nova } from "@/lib/nova-copy";
+import { useApp } from "@/context/AppContext";
 import { notFound } from "next/navigation";
 
 export default function TaskBreakdownPage({
@@ -23,6 +25,7 @@ export default function TaskBreakdownPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { demo } = useApp();
   const task = tasks.find((t) => t.id === id);
   if (!task) notFound();
 
@@ -57,10 +60,13 @@ export default function TaskBreakdownPage({
             </p>
           </div>
 
-          <NovaCard
-            message="Five small steps beat one overwhelming task. Start with step 2 — you've already reviewed the rubric."
-            compact
-          />
+          <NovaCard message={nova.taskBreakdown} compact />
+
+          {!demo.planAccepted && (
+            <p className="rounded-xl bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
+              Accept tonight&apos;s plan on the focus screen before starting.
+            </p>
+          )}
 
           <section>
             <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wider text-[#9b95a8]">
@@ -105,16 +111,18 @@ export default function TaskBreakdownPage({
           </section>
 
           <div className="space-y-2.5">
-            <PrimaryButton href="/focus-mode">
+            <PrimaryButton
+              href={demo.planAccepted ? "/focus-mode" : "/focus"}
+            >
               <span className="flex items-center gap-2">
                 <Play size={18} fill="currentColor" />
-                Start focus
+                {demo.planAccepted ? "Start focus" : "Accept plan first"}
               </span>
             </PrimaryButton>
             <PrimaryButton href="/recovery" variant="soft">
               <span className="flex items-center gap-2">
                 <Feather size={18} />
-                Lighten plan
+                Schedule changed?
               </span>
             </PrimaryButton>
             <button

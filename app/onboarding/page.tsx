@@ -98,7 +98,7 @@ export default function OnboardingPage() {
       pacing,
       energyPattern,
     });
-    router.replace("/home");
+    router.replace("/canvas-sync");
   };
 
   return (
@@ -317,7 +317,7 @@ export default function OnboardingPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Alex"
+                    placeholder="Emily"
                     autoComplete="name"
                     className="h-[52px] w-full rounded-2xl border border-violet-100 bg-white px-4 text-[16px] text-[#1a1625] outline-none ring-violet-400 transition-shadow focus:ring-2"
                   />

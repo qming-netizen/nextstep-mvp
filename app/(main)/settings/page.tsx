@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   BookOpen,
   Calendar,
   ChevronRight,
   GraduationCap,
   Lock,
+  Play,
+  RotateCcw,
   Sparkles,
   Upload,
 } from "lucide-react";
@@ -97,7 +100,8 @@ function Toggle({
 }
 
 export default function SettingsPage() {
-  const { user, resetOnboarding } = useApp();
+  const router = useRouter();
+  const { user, resetOnboarding, resetDemoFlow } = useApp();
   const [notifications, setNotifications] = useState(true);
   const [focusReminders, setFocusReminders] = useState(true);
   const [recoveryNudges, setRecoveryNudges] = useState(true);
@@ -109,6 +113,43 @@ export default function SettingsPage() {
       <PageHeader title="Settings" subtitle="Make NextStep yours" />
       <ScrollArea>
         <div className="space-y-6 px-5 pb-4">
+          <section>
+            <p className="mb-2 text-[13px] font-semibold uppercase tracking-wider text-[#9b95a8]">
+              Assignment demos
+            </p>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => router.push("/recovery")}
+                className="flex w-full items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-left text-white shadow-lg shadow-violet-500/20"
+              >
+                <Play size={20} />
+                <div>
+                  <p className="font-semibold">Recovery flow</p>
+                  <p className="text-[12px] text-white/80">
+                    History paper · shift change · adaptive replan
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  resetDemoFlow();
+                  router.push("/home");
+                }}
+                className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm"
+              >
+                <RotateCcw size={20} className="text-violet-600" />
+                <div>
+                  <p className="font-medium text-[#1a1625]">Happy path</p>
+                  <p className="text-[12px] text-[#6b6578]">
+                    Canvas sync → Biology focus → progress
+                  </p>
+                </div>
+              </button>
+            </div>
+          </section>
+
           <section>
             <p className="mb-2 text-[13px] font-semibold uppercase tracking-wider text-[#9b95a8]">
               Profile

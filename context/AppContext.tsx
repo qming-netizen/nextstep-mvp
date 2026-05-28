@@ -8,44 +8,74 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  initialDemoState,
+  type DemoPersistedState,
+} from "@/lib/demo-flow";
+import { demoPersona } from "@/lib/nova-copy";
 import type { UserProfile } from "@/lib/types";
 
 interface AppContextValue {
   onboardingComplete: boolean;
   user: UserProfile;
+  demo: DemoPersistedState;
   completeOnboarding: (profile: UserProfile) => void;
   resetOnboarding: () => void;
-  showRecovery: boolean;
-  setShowRecovery: (v: boolean) => void;
+  completeCanvasSync: () => void;
+  acceptPlan: () => void;
+  completeFocusSession: () => void;
+  triggerRecoveryDemo: () => void;
+  applyRecovery: () => void;
+  resetDemoFlow: () => void;
 }
 
 const defaultUser: UserProfile = {
-  name: "Alex",
-  email: "alex@university.edu",
-  hardest: [],
-  studyStyle: [],
-  pacing: "steady",
+  name: demoPersona.name,
+  email: demoPersona.email,
+  hardest: ["prioritize", "overwhelm"],
+  studyStyle: ["blocks", "solo"],
+  pacing: "gentle",
   energyPattern: "evening",
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const STORAGE_KEY = "nextstep-onboarding";
+const STORAGE_KEY = "nextstep-app-state";
+
+type StoredState = {
+  onboardingComplete: boolean;
+  user: UserProfile;
+  demo: DemoPersistedState;
+};
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [user, setUser] = useState<UserProfile>(defaultUser);
-  const [showRecovery, setShowRecovery] = useState(false);
+  const [demo, setDemo] = useState<DemoPersistedState>(initialDemoState);
   const [hydrated, setHydrated] = useState(false);
+
+  const persist = useCallback(
+    (next: Partial<StoredState>) => {
+      const merged = {
+        onboardingComplete:
+          next.onboardingComplete ?? onboardingComplete,
+        user: next.user ?? user,
+        demo: next.demo ?? demo,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    },
+    [onboardingComplete, user, demo]
+  );
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const data = JSON.parse(raw) as { complete: boolean; user: UserProfile };
-        if (data.complete) {
+        const data = JSON.parse(raw) as StoredState;
+        if (data.onboardingComplete) {
           setOnboardingComplete(true);
           setUser(data.user);
+          setDemo({ ...initialDemoState, ...data.demo });
         }
       }
     } catch {
@@ -57,9 +87,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const completeOnboarding = useCallback((profile: UserProfile) => {
     setUser(profile);
     setOnboardingComplete(true);
+    const demoState = { ...initialDemoState };
+    setDemo(demoState);
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ complete: true, user: profile })
+      JSON.stringify({
+        onboardingComplete: true,
+        user: profile,
+        demo: demoState,
+      })
     );
   }, []);
 
@@ -67,7 +103,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEY);
     setOnboardingComplete(false);
     setUser(defaultUser);
+    setDemo(initialDemoState);
   }, []);
+
+  const updateDemo = useCallback(
+    (patch: Partial<DemoPersistedState>) => {
+      setDemo((prev) => {
+        const next = { ...prev, ...patch };
+        persist({ demo: next });
+        return next;
+      });
+    },
+    [persist]
+  );
+
+  const completeCanvasSync = useCallback(
+    () => updateDemo({ canvasSynced: true }),
+    [updateDemo]
+  );
+
+  const acceptPlan = useCallback(
+    () => updateDemo({ planAccepted: true }),
+    [updateDemo]
+  );
+
+  const completeFocusSession = useCallback(
+    () => updateDemo({ focusCompleted: true }),
+    [updateDemo]
+  );
+
+  const triggerRecoveryDemo = useCallback(
+    () => updateDemo({ recoveryTriggered: true, recoveryApplied: false }),
+    [updateDemo]
+  );
+
+  const applyRecovery = useCallback(
+    () => updateDemo({ recoveryApplied: true }),
+    [updateDemo]
+  );
+
+  const resetDemoFlow = useCallback(() => {
+    setDemo(initialDemoState);
+    persist({ demo: initialDemoState });
+  }, [persist]);
 
   if (!hydrated) {
     return (
@@ -82,10 +160,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         onboardingComplete,
         user,
+        demo,
         completeOnboarding,
         resetOnboarding,
-        showRecovery,
-        setShowRecovery,
+        completeCanvasSync,
+        acceptPlan,
+        completeFocusSession,
+        triggerRecoveryDemo,
+        applyRecovery,
+        resetDemoFlow,
       }}
     >
       {children}

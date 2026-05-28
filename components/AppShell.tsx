@@ -1,16 +1,19 @@
 "use client";
 
 import { BottomNav } from "./BottomNav";
+import { FlowHint } from "./FlowHint";
 
 interface AppShellProps {
   children: React.ReactNode;
   showNav?: boolean;
+  showFlowHint?: boolean;
   className?: string;
 }
 
 export function AppShell({
   children,
   showNav = true,
+  showFlowHint = true,
   className = "",
 }: AppShellProps) {
   return (
@@ -20,6 +23,7 @@ export function AppShell({
       >
         {children}
       </div>
+      {showFlowHint && showNav && <FlowHint />}
       {showNav && <div className="h-[72px] shrink-0" aria-hidden />}
       {showNav && <BottomNav />}
     </div>

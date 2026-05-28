@@ -23,6 +23,7 @@ export interface FocusRecommendation {
   reasoning: string;
   workloadEstimate: string;
   focusWindow: string;
+  whyFirst?: string[];
 }
 
 export interface UserProfile {
