@@ -6,6 +6,7 @@ import { Award, Calendar, TrendingUp } from "lucide-react";
 import { NovaCard } from "@/components/NovaCard";
 import { PageHeader } from "@/components/PageHeader";
 import { ScrollArea } from "@/components/ScrollArea";
+import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import {
   todayStatsInitial,
   todayStatsAfterFocus,
@@ -14,10 +15,11 @@ import {
   tasks,
 } from "@/lib/mock-data";
 import { nova } from "@/lib/nova-copy";
+import { memoryNudge } from "@/lib/nova-persona";
 import { useApp } from "@/context/AppContext";
 
 export default function ProgressPage() {
-  const { user, demo } = useApp();
+  const { user, demo, novaMode } = useApp();
   const stats = demo.focusCompleted ? todayStatsAfterFocus : todayStatsInitial;
   const weekly = demo.focusCompleted
     ? weeklyProgressAfterFocus
@@ -103,6 +105,8 @@ export default function ProgressPage() {
               ))}
             </div>
           </section>
+
+          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "progress" })} />
 
           {demo.focusCompleted && (
             <section>

@@ -145,7 +145,7 @@ export function RecoveryFlow() {
                 onClick={fillDemoInputs}
                 className="text-[13px] font-medium text-violet-600"
               >
-                Fill Emily&apos;s answers (demo)
+                Autofill example answers
               </button>
             </motion.div>
           )}

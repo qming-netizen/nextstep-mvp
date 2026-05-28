@@ -12,6 +12,8 @@ import {
 import { NovaCard } from "@/components/NovaCard";
 import { ScrollArea } from "@/components/ScrollArea";
 import { DeadlineCluster } from "@/components/DeadlineCluster";
+import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
+import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import {
   focusRecommendation,
   tasks,
@@ -19,10 +21,11 @@ import {
   todayStatsAfterFocus,
 } from "@/lib/mock-data";
 import { demoDateLabel, demoTimeLabel, nova } from "@/lib/nova-copy";
+import { memoryNudge } from "@/lib/nova-persona";
 import { useApp } from "@/context/AppContext";
 
 export default function HomePage() {
-  const { user, demo } = useApp();
+  const { user, demo, novaMode } = useApp();
   const stats = demo.focusCompleted ? todayStatsAfterFocus : todayStatsInitial;
   const pendingTasks = tasks.filter((t) => t.status !== "done");
 
@@ -99,6 +102,27 @@ export default function HomePage() {
               <ArrowRight size={16} />
             </Link>
           </NovaCard>
+
+          <NovaReasoningCard
+            title="Why this recommendation"
+            model={{
+              whyNow: [
+                "Closest deadline in your Canvas cluster",
+                "A small win tonight prevents a Friday scramble later",
+                "Step 1 is already done, so you have momentum",
+              ],
+              sources: ["canvas", "preferences", "completionPatterns"],
+              estimatedEffort: focusRecommendation.workloadEstimate,
+              confidence: "Medium",
+              tradeoff: "Focusing Biology first means Calculus stays a light warm-up tonight.",
+              approval: {
+                primary: "Accept tonight’s plan",
+                secondary: "Adjust the plan",
+              },
+            }}
+          />
+
+          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "home" })} />
 
           {demo.planAccepted && (
             <motion.div

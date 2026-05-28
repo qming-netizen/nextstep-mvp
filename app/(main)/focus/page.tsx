@@ -8,13 +8,16 @@ import { NovaCard } from "@/components/NovaCard";
 import { PageHeader } from "@/components/PageHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScrollArea } from "@/components/ScrollArea";
+import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
+import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import { focusPlanBlocks, focusRecommendation } from "@/lib/mock-data";
 import { nova } from "@/lib/nova-copy";
+import { memoryNudge } from "@/lib/nova-persona";
 import { useApp } from "@/context/AppContext";
 
 export default function FocusPlanPage() {
   const router = useRouter();
-  const { demo, acceptPlan } = useApp();
+  const { demo, acceptPlan, novaMode } = useApp();
 
   const handleAccept = () => {
     acceptPlan();
@@ -33,6 +36,26 @@ export default function FocusPlanPage() {
           <NovaCard
             message={nova.focusPlanExplain}
             subtitle={nova.focusPlanAccept}
+          />
+
+          <NovaReasoningCard
+            title="Reasoning + tradeoffs"
+            model={{
+              whyNow: [
+                "Biology is the anchor task in this week’s deadline cluster",
+                "A single deep block beats spreading stress across the whole night",
+                "The plan matches your evening energy pattern",
+              ],
+              sources: ["canvas", "preferences", "completionPatterns"],
+              estimatedEffort: focusRecommendation.workloadEstimate,
+              confidence: "Medium",
+              tradeoff:
+                "This plan prioritizes sustainability over speed — Calculus stays intentionally light tonight.",
+              approval: {
+                primary: "Accept tonight’s plan",
+                secondary: "Adjust something",
+              },
+            }}
           />
 
           <section className="rounded-2xl border border-violet-100/80 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
@@ -112,6 +135,8 @@ export default function FocusPlanPage() {
               Schedule changed? Open recovery
             </Link>
           </div>
+
+          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "task" })} />
         </div>
       </ScrollArea>
     </>

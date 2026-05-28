@@ -1,7 +1,6 @@
 "use client";
 
 import { use } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -14,9 +13,12 @@ import { NovaCard } from "@/components/NovaCard";
 import { PageHeader } from "@/components/PageHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScrollArea } from "@/components/ScrollArea";
+import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
+import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import { tasks } from "@/lib/mock-data";
 import { nova } from "@/lib/nova-copy";
 import { useApp } from "@/context/AppContext";
+import { memoryNudge } from "@/lib/nova-persona";
 import { notFound } from "next/navigation";
 
 export default function TaskBreakdownPage({
@@ -25,7 +27,7 @@ export default function TaskBreakdownPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { demo } = useApp();
+  const { demo, novaMode } = useApp();
   const task = tasks.find((t) => t.id === id);
   if (!task) notFound();
 
@@ -67,6 +69,26 @@ export default function TaskBreakdownPage({
               Accept tonight&apos;s plan on the focus screen before starting.
             </p>
           )}
+
+          <NovaReasoningCard
+            title="Why these steps"
+            model={{
+              whyNow: [
+                "Micro-steps reduce overwhelm and make starting easier",
+                "Methods first keeps you from drafting without structure",
+                "Each step stays under ~15 minutes to protect momentum",
+              ],
+              sources: ["canvas", "preferences", "completionPatterns"],
+              estimatedEffort: `~${task.estimatedMinutes} min · 5 steps`,
+              confidence: "Medium",
+              tradeoff:
+                "Breaking it down adds a little overhead, but it prevents avoidance and last-minute panic.",
+              approval: {
+                primary: demo.planAccepted ? "Start focus" : "Accept plan first",
+                secondary: "Adjust steps",
+              },
+            }}
+          />
 
           <section>
             <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wider text-[#9b95a8]">
@@ -133,6 +155,8 @@ export default function TaskBreakdownPage({
               Edit steps
             </button>
           </div>
+
+          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "task" })} />
         </div>
       </ScrollArea>
     </>

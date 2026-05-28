@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -13,12 +12,15 @@ import {
   type DemoPersistedState,
 } from "@/lib/demo-flow";
 import { demoPersona } from "@/lib/nova-copy";
+import type { NovaMode } from "@/lib/nova-persona";
 import type { UserProfile } from "@/lib/types";
 
 interface AppContextValue {
   onboardingComplete: boolean;
   user: UserProfile;
   demo: DemoPersistedState;
+  novaMode: NovaMode;
+  setNovaMode: (m: NovaMode) => void;
   completeOnboarding: (profile: UserProfile) => void;
   resetOnboarding: () => void;
   completeCanvasSync: () => void;
@@ -46,13 +48,33 @@ type StoredState = {
   onboardingComplete: boolean;
   user: UserProfile;
   demo: DemoPersistedState;
+  novaMode: NovaMode;
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const [user, setUser] = useState<UserProfile>(defaultUser);
-  const [demo, setDemo] = useState<DemoPersistedState>(initialDemoState);
-  const [hydrated, setHydrated] = useState(false);
+  const loadStored = (): StoredState | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw) as StoredState;
+    } catch {
+      return null;
+    }
+  };
+
+  const stored = loadStored();
+
+  const [onboardingComplete, setOnboardingComplete] = useState(
+    Boolean(stored?.onboardingComplete)
+  );
+  const [user, setUser] = useState<UserProfile>(stored?.user ?? defaultUser);
+  const [demo, setDemo] = useState<DemoPersistedState>(
+    stored?.demo ? { ...initialDemoState, ...stored.demo } : initialDemoState
+  );
+  const [novaMode, setNovaModeState] = useState<NovaMode>(
+    stored?.novaMode ?? "gentle"
+  );
 
   const persist = useCallback(
     (next: Partial<StoredState>) => {
@@ -61,28 +83,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           next.onboardingComplete ?? onboardingComplete,
         user: next.user ?? user,
         demo: next.demo ?? demo,
+        novaMode: next.novaMode ?? novaMode,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     },
-    [onboardingComplete, user, demo]
+    [onboardingComplete, user, demo, novaMode]
   );
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const data = JSON.parse(raw) as StoredState;
-        if (data.onboardingComplete) {
-          setOnboardingComplete(true);
-          setUser(data.user);
-          setDemo({ ...initialDemoState, ...data.demo });
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-    setHydrated(true);
-  }, []);
 
   const completeOnboarding = useCallback((profile: UserProfile) => {
     setUser(profile);
@@ -95,6 +101,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         onboardingComplete: true,
         user: profile,
         demo: demoState,
+        novaMode: "gentle" as NovaMode,
       })
     );
   }, []);
@@ -104,6 +111,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOnboardingComplete(false);
     setUser(defaultUser);
     setDemo(initialDemoState);
+    setNovaModeState("gentle");
   }, []);
 
   const updateDemo = useCallback(
@@ -147,13 +155,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     persist({ demo: initialDemoState });
   }, [persist]);
 
-  if (!hydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8F6FC]">
-        <div className="h-8 w-8 animate-pulse rounded-full bg-violet-200" />
-      </div>
-    );
-  }
+  const setNovaMode = useCallback(
+    (m: NovaMode) => {
+      setNovaModeState(m);
+      persist({ novaMode: m });
+    },
+    [persist]
+  );
 
   return (
     <AppContext.Provider
@@ -161,6 +169,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         onboardingComplete,
         user,
         demo,
+        novaMode,
+        setNovaMode,
         completeOnboarding,
         resetOnboarding,
         completeCanvasSync,

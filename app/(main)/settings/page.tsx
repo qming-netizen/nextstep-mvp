@@ -9,6 +9,8 @@ import {
   GraduationCap,
   Lock,
   Play,
+  Stethoscope,
+  UsersRound,
   RotateCcw,
   Sparkles,
   Upload,
@@ -101,11 +103,11 @@ function Toggle({
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, resetOnboarding, resetDemoFlow } = useApp();
+  const { user, resetOnboarding, resetDemoFlow, novaMode, setNovaMode } =
+    useApp();
   const [notifications, setNotifications] = useState(true);
   const [focusReminders, setFocusReminders] = useState(true);
   const [recoveryNudges, setRecoveryNudges] = useState(true);
-  const [novaMode, setNovaMode] = useState<"gentle" | "direct">("gentle");
   const [analytics, setAnalytics] = useState(false);
 
   return (
@@ -128,6 +130,49 @@ export default function SettingsPage() {
                   <p className="font-semibold">Recovery flow</p>
                   <p className="text-[12px] text-white/80">
                     History paper · shift change · adaptive replan
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/recovery-illness")}
+                className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm"
+              >
+                <Stethoscope size={20} className="text-violet-600" />
+                <div>
+                  <p className="font-medium text-[#1a1625]">
+                    Illness recovery
+                  </p>
+                  <p className="text-[12px] text-[#6b6578]">
+                    48-hour triage → two options → approval
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/recovery-daniel")}
+                className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm"
+              >
+                <UsersRound size={20} className="text-violet-600" />
+                <div>
+                  <p className="font-medium text-[#1a1625]">
+                    Daniel scenario
+                  </p>
+                  <p className="text-[12px] text-[#6b6578]">
+                    Café shift extended → lost study block → two replans
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/nova")}
+                className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm"
+              >
+                <Sparkles size={20} className="text-violet-600" />
+                <div>
+                  <p className="font-medium text-[#1a1625]">Meet Nova</p>
+                  <p className="text-[12px] text-[#6b6578]">
+                    What Nova does, data used, boundaries, recovery
                   </p>
                 </div>
               </button>

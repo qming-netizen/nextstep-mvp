@@ -176,7 +176,7 @@ export default function FocusModePage() {
             }}
             className="w-full py-2 text-center text-[13px] font-medium text-white/40"
           >
-            Complete session (demo)
+            Finish session early
           </button>
         </div>
       )}

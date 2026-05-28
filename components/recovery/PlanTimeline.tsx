@@ -1,9 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { RecoveryPlan } from "@/lib/recovery-plan";
 
-export function PlanTimeline({ plan }: { plan: RecoveryPlan }) {
+type TimelineBlock = {
+  id: string;
+  when: string;
+  title: string;
+  detail: string;
+  hours: number;
+};
+
+export function PlanTimeline({
+  plan,
+}: {
+  plan: { totalHours: number; blocks: TimelineBlock[] };
+}) {
   return (
     <div className="space-y-2">
       {plan.blocks.map((block, i) => (
