@@ -4,11 +4,12 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Check, Lock, Sparkles } from "lucide-react";
 import { NovaBubble } from "@/components/recovery/NovaBubble";
-import { PlanTimeline } from "@/components/recovery/PlanTimeline";
 import { RecoveryStickyFooter } from "@/components/recovery/RecoveryStickyFooter";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
 import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
+import { Disclosure } from "@/components/nova/Disclosure";
+import { PlanCards, type PlanCardBlock } from "@/components/recovery/PlanCards";
 import {
   danielContext,
   danielCopy,
@@ -38,6 +39,7 @@ export function DanielRecoveryFlow() {
   const [phase, setPhase] = useState<Phase>("report");
   const [selected, setSelected] = useState<DanielOptionId | null>(null);
   const [locked, setLocked] = useState(false);
+  const [accepted, setAccepted] = useState<Set<string>>(new Set());
 
   const progress = (phaseProgress[phase] / 4) * 100;
   const selectedOption = useMemo(
@@ -65,6 +67,10 @@ export function DanielRecoveryFlow() {
         "Optional buffer: leave a 30-minute slot Friday afternoon unscheduled. Only if that reduces pressure for you.",
     };
   }, [selectedOption]);
+
+  const blocks: PlanCardBlock[] = useMemo(() => {
+    return timelineForSelected?.blocks ?? [];
+  }, [timelineForSelected]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -255,20 +261,23 @@ export function DanielRecoveryFlow() {
 
               {timelineForSelected && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <PlanTimeline plan={timelineForSelected} />
-                  <div className="mt-4 rounded-2xl border border-violet-100/80 bg-white/80 p-4 backdrop-blur-sm">
-                    <p className="text-[12px] font-semibold uppercase tracking-wide text-violet-600">
-                      Reasoning
-                    </p>
-                    <p className="mt-2 text-[14px] leading-relaxed text-[#1a1625]">
+                  <PlanCards
+                    blocks={blocks}
+                    acceptedIds={accepted}
+                    onAccept={(id) =>
+                      setAccepted((prev) => new Set([...Array.from(prev), id]))
+                    }
+                    onSkip={(id) => {
+                      setAccepted((prev) => new Set([...Array.from(prev), id]));
+                    }}
+                  />
+                  <div className="mt-3 space-y-2.5">
+                    <Disclosure title="Why Nova suggests this">
                       {timelineForSelected.whyItWorks}
-                    </p>
-                    <p className="mt-3 text-[13px] leading-relaxed text-[#6b6578]">
-                      <span className="font-medium text-[#1a1625]">
-                        Tradeoff:
-                      </span>{" "}
+                    </Disclosure>
+                    <Disclosure title="View tradeoff">
                       {timelineForSelected.tradeoff}
-                    </p>
+                    </Disclosure>
                   </div>
                 </motion.div>
               )}
@@ -291,7 +300,16 @@ export function DanielRecoveryFlow() {
                 </p>
               </div>
               <NovaBubble message={danielCopy.applyConfirm} />
-              <PlanTimeline plan={timelineForSelected} />
+              <PlanCards
+                blocks={blocks}
+                acceptedIds={accepted.size ? accepted : new Set(blocks.map((b) => b.id))}
+                onAccept={(id) =>
+                  setAccepted((prev) => new Set([...Array.from(prev), id]))
+                }
+                onSkip={(id) =>
+                  setAccepted((prev) => new Set([...Array.from(prev), id]))
+                }
+              />
               <NovaBubble message={danielCopy.reinforce} />
             </motion.div>
           )}

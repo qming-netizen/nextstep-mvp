@@ -4,12 +4,13 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Lock, Thermometer, AlertCircle } from "lucide-react";
 import { NovaBubble } from "@/components/recovery/NovaBubble";
-import { PlanTimeline } from "@/components/recovery/PlanTimeline";
 import { RecoveryStickyFooter } from "@/components/recovery/RecoveryStickyFooter";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
 import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
+import { Disclosure } from "@/components/nova/Disclosure";
 import { memoryNudge } from "@/lib/nova-persona";
+import { PlanCards, type PlanCardBlock } from "@/components/recovery/PlanCards";
 import {
   illnessCopy,
   illnessDefaults,
@@ -46,12 +47,23 @@ export function IllnessRecoveryFlow() {
   });
   const [selected, setSelected] = useState<IllnessOptionId | null>(null);
   const [locked, setLocked] = useState(false);
+  const [accepted, setAccepted] = useState<Set<string>>(new Set());
 
   const progress = (phaseProgress[phase] / 4) * 100;
   const selectedPlan = useMemo(
     () => illnessPlans.find((p) => p.id === selected) ?? null,
     [selected]
   );
+
+  const blocks: PlanCardBlock[] = useMemo(() => {
+    return (selectedPlan?.blocks ?? []).map((b) => ({
+      id: b.id,
+      when: b.when,
+      title: b.title,
+      detail: b.detail,
+      hours: b.hours,
+    }));
+  }, [selectedPlan]);
 
   const canBuild =
     inputs.whatHappened.trim() &&
@@ -287,12 +299,31 @@ export function IllnessRecoveryFlow() {
 
               {selectedPlan && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <PlanTimeline plan={selectedPlan} />
-                  <div className="mt-3 flex gap-2.5 rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
-                    <AlertCircle size={18} className="mt-0.5 shrink-0 text-amber-600" />
-                    <p className="text-[13px] leading-relaxed text-[#6b6578]">
-                      If symptoms worsen, downshift to the rest‑first plan. No guilt.
-                    </p>
+                  <PlanCards
+                    blocks={blocks}
+                    acceptedIds={accepted}
+                    onAccept={(id) =>
+                      setAccepted((prev) => new Set([...Array.from(prev), id]))
+                    }
+                    onSkip={(id) =>
+                      setAccepted((prev) => new Set([...Array.from(prev), id]))
+                    }
+                  />
+                  <div className="mt-3 space-y-2.5">
+                    <Disclosure title="Why Nova suggests this">
+                      {selectedPlan.why}
+                    </Disclosure>
+                    <Disclosure title="View tradeoff">
+                      {selectedPlan.tradeoff}
+                    </Disclosure>
+                    <Disclosure title="Recovery note" defaultOpen>
+                      <div className="flex gap-2.5">
+                        <AlertCircle size={18} className="mt-0.5 shrink-0 text-amber-600" />
+                        <span>
+                          If symptoms worsen, downshift to the rest‑first plan. No guilt.
+                        </span>
+                      </div>
+                    </Disclosure>
                   </div>
                 </motion.div>
               )}
@@ -314,7 +345,16 @@ export function IllnessRecoveryFlow() {
                   Recovery plan applied
                 </p>
               </div>
-              <PlanTimeline plan={selectedPlan} />
+              <PlanCards
+                blocks={blocks}
+                acceptedIds={accepted.size ? accepted : new Set(blocks.map((b) => b.id))}
+                onAccept={(id) =>
+                  setAccepted((prev) => new Set([...Array.from(prev), id]))
+                }
+                onSkip={(id) =>
+                  setAccepted((prev) => new Set([...Array.from(prev), id]))
+                }
+              />
               <NovaBubble message={illnessCopy.reinforce} />
             </motion.div>
           )}

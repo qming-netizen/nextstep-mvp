@@ -7,6 +7,7 @@ import { NovaBubble } from "./NovaBubble";
 import { PlanTimeline } from "./PlanTimeline";
 import { RecoveryStickyFooter } from "./RecoveryStickyFooter";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { Disclosure } from "@/components/nova/Disclosure";
 import {
   buildRecoveryPlan,
   defaultRecoveryInputs,
@@ -170,29 +171,23 @@ export function RecoveryFlow() {
                 </div>
                 <PlanTimeline plan={initialPlan} />
               </section>
-              <div className="rounded-2xl border border-violet-100/80 bg-white/80 p-4 backdrop-blur-sm">
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-violet-600">
-                  Why this works
-                </p>
-                <p className="mt-2 text-[14px] leading-relaxed text-[#1a1625]">
-                  {initialPlan.whyItWorks}
-                </p>
-              </div>
-              <div className="flex gap-2.5 rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
-                <AlertCircle
-                  size={18}
-                  className="mt-0.5 shrink-0 text-amber-600"
-                />
-                <div>
-                  <p className="text-[12px] font-semibold text-amber-900">
-                    Honest tradeoff
-                  </p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-[#6b6578]">
-                    {initialPlan.tradeoff}
-                  </p>
-                </div>
-              </div>
+
               <NovaBubble message={recoveryCopy.approvalAsk} />
+
+              <div className="space-y-2.5">
+                <Disclosure title="Why Nova suggests this">
+                  {initialPlan.whyItWorks}
+                </Disclosure>
+                <Disclosure title="View tradeoff">
+                  <div className="flex gap-2.5">
+                    <AlertCircle
+                      size={18}
+                      className="mt-0.5 shrink-0 text-amber-600"
+                    />
+                    <span>{initialPlan.tradeoff}</span>
+                  </div>
+                </Disclosure>
+              </div>
             </motion.div>
           )}
 
