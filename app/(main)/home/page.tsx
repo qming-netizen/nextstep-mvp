@@ -5,15 +5,13 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
-  CalendarClock,
   Sparkles,
   Target,
 } from "lucide-react";
 import { NovaCard } from "@/components/NovaCard";
+import { NovaCharacter } from "@/components/NovaCharacter";
 import { ScrollArea } from "@/components/ScrollArea";
 import { DeadlineCluster } from "@/components/DeadlineCluster";
-import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
-import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import {
   focusRecommendation,
   tasks,
@@ -21,13 +19,13 @@ import {
   todayStatsAfterFocus,
 } from "@/lib/mock-data";
 import { demoDateLabel, demoTimeLabel, nova } from "@/lib/nova-copy";
-import { memoryNudge } from "@/lib/nova-persona";
 import { useApp } from "@/context/AppContext";
 
 export default function HomePage() {
-  const { user, demo, novaMode } = useApp();
+  const { user, demo, userPlan } = useApp();
   const stats = demo.focusCompleted ? todayStatsAfterFocus : todayStatsInitial;
   const pendingTasks = tasks.filter((t) => t.status !== "done");
+  const hero = userPlan?.tasks.find((t) => t.id === userPlan.heroTaskId);
 
   return (
     <>
@@ -44,12 +42,15 @@ export default function HomePage() {
       <ScrollArea className="pb-8">
         <div className="space-y-4 px-5">
           <Link
-            href="/recovery"
-            className="flex items-center gap-3 rounded-2xl border border-violet-200/80 bg-gradient-to-r from-violet-50/90 to-white p-4 shadow-sm"
+            href="/recovery-trigger"
+            className="flex items-center gap-3 rounded-3xl border border-violet-200/60 bg-gradient-to-r from-violet-100/80 to-white p-4 shadow-md"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white">
-              <CalendarClock size={18} />
-            </div>
+            <NovaCharacter
+              state="overwhelmed"
+              size={44}
+              float={false}
+              className="mx-0 shrink-0"
+            />
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-semibold text-[#1a1625]">
                 Shift changed? History paper due Friday
@@ -61,68 +62,61 @@ export default function HomePage() {
             <ArrowRight size={18} className="shrink-0 text-violet-600" />
           </Link>
 
-          {!demo.recoveryTriggered && <DeadlineCluster />}
+          {!demo.recoveryTriggered && !userPlan && <DeadlineCluster />}
 
-          <NovaCard
-            message={`Nova recommends ${focusRecommendation.subject} first tonight.`}
-            subtitle={nova.homeBiologyPriority}
-          >
-            {focusRecommendation.whyFirst && (
-              <ul className="mt-3 space-y-2 rounded-xl bg-white/80 p-3">
-                {focusRecommendation.whyFirst.map((reason) => (
-                  <li
-                    key={reason}
-                    className="flex gap-2 text-[12px] leading-snug text-[#6b6578]"
-                  >
-                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-violet-400" />
-                    {reason}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="mt-3 space-y-2 rounded-xl bg-white/80 p-3">
-              <div className="flex justify-between text-[12px]">
-                <span className="text-[#6b6578]">Workload</span>
-                <span className="font-medium text-[#1a1625]">
-                  {focusRecommendation.workloadEstimate}
-                </span>
-              </div>
-              <div className="flex justify-between text-[12px]">
-                <span className="text-[#6b6578]">Focus window</span>
-                <span className="font-medium text-violet-600">
-                  {focusRecommendation.focusWindow}
-                </span>
-              </div>
-            </div>
-            <Link
-              href="/focus"
-              className="mt-3 flex h-11 items-center justify-center gap-2 rounded-xl bg-violet-600 text-[14px] font-semibold text-white"
+          {hero ? (
+            <NovaCard
+              character="focus"
+              message={userPlan?.novaIntro ?? "Here's your plan for today."}
+              subtitle={`${hero.minutes} min on ${hero.subject} first.`}
             >
-              {demo.planAccepted ? "View accepted plan" : "Review focus plan"}
-              <ArrowRight size={16} />
-            </Link>
-          </NovaCard>
+              <Link
+                href={`/tasks/${hero.id}`}
+                className="mt-4 flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FF9B7A] to-[#FF8A65] text-[15px] font-bold text-white shadow-lg"
+              >
+                Start: {hero.title.slice(0, 28)}
+                {hero.title.length > 28 ? "…" : ""} →
+              </Link>
+            </NovaCard>
+          ) : (
+            <NovaCard
+              character="focus"
+              message={`Let's tackle ${focusRecommendation.subject} first.`}
+              subtitle={nova.homeBiologyPriority}
+            >
+              <Link
+                href="/focus"
+                className="mt-4 flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 text-[15px] font-semibold text-white shadow-lg"
+              >
+                See tonight&apos;s plan
+                <ArrowRight size={16} />
+              </Link>
+            </NovaCard>
+          )}
 
-          <NovaReasoningCard
-            title="Why this recommendation"
-            model={{
-              whyNow: [
-                "Closest deadline in your Canvas cluster",
-                "A small win tonight prevents a Friday scramble later",
-                "Step 1 is already done, so you have momentum",
-              ],
-              sources: ["canvas", "preferences", "completionPatterns"],
-              estimatedEffort: focusRecommendation.workloadEstimate,
-              confidence: "Medium",
-              tradeoff: "Focusing Biology first means Calculus stays a light warm-up tonight.",
-              approval: {
-                primary: "Accept tonight’s plan",
-                secondary: "Adjust the plan",
-              },
-            }}
-          />
-
-          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "home" })} />
+          {userPlan && userPlan.tasks.length > 1 && (
+            <section>
+              <h2 className="mb-2 text-[15px] font-semibold text-[#1a1625]">
+                Then
+              </h2>
+              <div className="space-y-2">
+                {userPlan.tasks
+                  .filter((t) => t.id !== hero?.id)
+                  .map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/tasks/${t.id}`}
+                      className="block rounded-3xl bg-white/90 p-3 shadow-sm"
+                    >
+                      <p className="text-[14px] font-medium text-[#1a1625]">
+                        {t.emoji} {t.title}
+                      </p>
+                      <p className="text-[12px] text-[#9b95a8]">{t.minutes} min</p>
+                    </Link>
+                  ))}
+              </div>
+            </section>
+          )}
 
           {demo.planAccepted && (
             <motion.div

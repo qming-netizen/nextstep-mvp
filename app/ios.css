@@ -1,0 +1,57 @@
+/* iOS 16 Pro / Human Interface Guidelines tokens */
+
+.ios-root {
+  --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    system-ui, sans-serif;
+  --ios-label: #000000;
+  --ios-label-secondary: rgba(60, 60, 67, 0.6);
+  --ios-label-tertiary: rgba(60, 60, 67, 0.3);
+  --ios-bg: #f2f2f7;
+  --ios-bg-elevated: #ffffff;
+  --ios-separator: rgba(60, 60, 67, 0.29);
+  --ios-fill-secondary: rgba(120, 120, 128, 0.16);
+  --ios-tint: #7c5cfc;
+  --ios-tint-pressed: #6b4ae8;
+  --ios-radius-group: 12px;
+  --ios-radius-button: 14px;
+  --ios-shadow-button: 0 4px 16px rgba(124, 92, 252, 0.28),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  --ios-safe-top: 59px;
+  --ios-safe-bottom: 34px;
+  --ios-content-x: 20px;
+  font-family: var(--ios-font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.ios-large-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.36px;
+  line-height: 34px;
+  color: var(--ios-label);
+}
+
+.ios-body {
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.41px;
+  line-height: 22px;
+  color: var(--ios-label-secondary);
+}
+
+.ios-footnote {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.08px;
+  line-height: 18px;
+  color: var(--ios-label-secondary);
+}
+
+.ios-caption {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 16px;
+  color: var(--ios-label-tertiary);
+}

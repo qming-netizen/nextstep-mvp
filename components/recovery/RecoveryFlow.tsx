@@ -4,10 +4,10 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Check, Lock, Pencil } from "lucide-react";
 import { NovaBubble } from "./NovaBubble";
+import { RecoveryActionCard } from "./RecoveryActionCard";
 import { PlanTimeline } from "./PlanTimeline";
 import { RecoveryStickyFooter } from "./RecoveryStickyFooter";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import { Disclosure } from "@/components/nova/Disclosure";
 import {
   buildRecoveryPlan,
   defaultRecoveryInputs,
@@ -92,20 +92,28 @@ export function RecoveryFlow() {
               exit={{ opacity: 0 }}
               className="space-y-4 py-2"
             >
-              <NovaBubble message={recoveryCopy.intro} />
               <NovaBubble
-                message={recoveryCopy.introFollowUp}
-                delay={0.1}
+                character="overwhelmed"
+                message="Schedule shift + paper due Friday. Let's recover without the guilt spiral."
               />
-              <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/50 to-white p-4">
-                <p className="text-[13px] font-medium text-[#1a1625]">
-                  Scenario
-                </p>
-                <p className="mt-1 text-[13px] leading-relaxed text-[#6b6578]">
-                  Your work shift moved to Wednesday afternoon. A history paper
-                  is due Friday and you&apos;re not sure where to start.
-                </p>
-              </div>
+              <RecoveryActionCard
+                title="History paper outline"
+                estimatedTime="~2.5 hrs · Thu AM"
+                priority="High"
+                detail="Shift moved to Wed PM — mornings are your honest window."
+                actionLabel="Start recovery plan"
+                onAction={() => setPhase("clarify")}
+                delay={0.08}
+              />
+              <RecoveryActionCard
+                title="Buffer check-in"
+                estimatedTime="15 min · Fri PM"
+                priority="Low"
+                detail="Optional slack if research runs long."
+                actionLabel="Skip for now"
+                onAction={() => setPhase("clarify")}
+                delay={0.14}
+              />
             </motion.div>
           )}
 
@@ -146,7 +154,7 @@ export function RecoveryFlow() {
                 onClick={fillDemoInputs}
                 className="text-[13px] font-medium text-violet-600"
               >
-                Autofill example answers
+                Fill Emily&apos;s answers (demo)
               </button>
             </motion.div>
           )}
@@ -159,35 +167,48 @@ export function RecoveryFlow() {
               exit={{ opacity: 0 }}
               className="space-y-4 py-2"
             >
-              <NovaBubble message={recoveryCopy.planReady} />
+              <NovaBubble
+                character="overwhelmed"
+                message={recoveryCopy.planReady}
+                subtitle={initialPlan.workloadNote}
+              />
               <section>
-                <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#9b95a8]">
-                    Proposed plan
-                  </h2>
-                  <span className="text-[11px] font-medium text-violet-600">
-                    {initialPlan.workloadNote}
-                  </span>
-                </div>
+                <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wider text-[#9b95a8]">
+                  Recovery blocks
+                </h2>
                 <PlanTimeline plan={initialPlan} />
               </section>
-
-              <NovaBubble message={recoveryCopy.approvalAsk} />
-
-              <div className="space-y-2.5">
-                <Disclosure title="Why Nova suggests this">
-                  {initialPlan.whyItWorks}
-                </Disclosure>
-                <Disclosure title="View tradeoff">
-                  <div className="flex gap-2.5">
-                    <AlertCircle
-                      size={18}
-                      className="mt-0.5 shrink-0 text-amber-600"
-                    />
-                    <span>{initialPlan.tradeoff}</span>
+              <div className="space-y-2">
+                {initialPlan.blocks.slice(0, 2).map((block, i) => (
+                  <div
+                    key={block.id}
+                    className="rounded-2xl border border-violet-100 bg-white p-3.5"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-[#1a1625]">{block.title}</p>
+                      <span className="text-[11px] font-semibold text-violet-600">
+                        {i === 0 ? "High" : "Medium"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[12px] text-[#6b6578]">
+                      {block.hours}h · {block.when}
+                    </p>
+                    <p className="mt-1.5 text-[13px] leading-snug text-[#6b6578]">
+                      {block.detail}
+                    </p>
                   </div>
-                </Disclosure>
+                ))}
               </div>
+              <div className="flex gap-2 rounded-2xl border border-amber-100 bg-amber-50/60 px-3 py-2.5">
+                <AlertCircle size={16} className="shrink-0 text-amber-600" />
+                <p className="text-[12px] leading-snug text-[#6b6578]">
+                  {initialPlan.tradeoff}
+                </p>
+              </div>
+              <NovaBubble
+                character="overwhelmed"
+                message={recoveryCopy.approvalAsk}
+              />
             </motion.div>
           )}
 
@@ -304,7 +325,7 @@ export function RecoveryFlow() {
                   Plan locked
                 </p>
               </div>
-              <NovaBubble message={recoveryCopy.locked} />
+              <NovaBubble character="success" message={recoveryCopy.locked} />
               <PlanTimeline plan={lockedPlan} />
             </motion.div>
           )}

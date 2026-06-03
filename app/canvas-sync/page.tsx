@@ -43,7 +43,7 @@ export default function CanvasSyncPage() {
   };
 
   return (
-    <div className="mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col bg-[#F8F6FC]">
+    <div className="flex min-h-0 flex-1 flex-col">
       <header className="shrink-0 px-5 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white">

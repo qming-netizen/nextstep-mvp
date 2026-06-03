@@ -41,6 +41,7 @@ export const initialDemoState: DemoPersistedState = {
 
 export function getActiveDemoStep(
   pathname: string,
+  state: DemoPersistedState
 ): DemoStepId {
   if (pathname.startsWith("/onboarding")) return "onboarding";
   if (pathname.startsWith("/canvas-sync")) return "canvas";

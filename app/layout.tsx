@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import "./ios.css";
 import { AppProvider } from "@/context/AppContext";
 
 const geistSans = Geist({

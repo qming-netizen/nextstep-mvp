@@ -12,16 +12,29 @@ import {
   type DemoPersistedState,
 } from "@/lib/demo-flow";
 import { demoPersona } from "@/lib/nova-copy";
-import type { NovaMode } from "@/lib/nova-persona";
-import type { UserProfile } from "@/lib/types";
+import type {
+  OnboardingAssignment,
+  OnboardingPlateItem,
+  UserPlan,
+  UserProfile,
+} from "@/lib/types";
+
+export interface CompleteOnboardingInput {
+  profile: UserProfile;
+  plate: OnboardingPlateItem[];
+  assignments: OnboardingAssignment[];
+  plan: UserPlan;
+  name: string;
+}
 
 interface AppContextValue {
   onboardingComplete: boolean;
   user: UserProfile;
   demo: DemoPersistedState;
-  novaMode: NovaMode;
-  setNovaMode: (m: NovaMode) => void;
-  completeOnboarding: (profile: UserProfile) => void;
+  plate: OnboardingPlateItem[];
+  assignments: OnboardingAssignment[];
+  userPlan: UserPlan | null;
+  completeOnboarding: (input: CompleteOnboardingInput) => void;
   resetOnboarding: () => void;
   completeCanvasSync: () => void;
   acceptPlan: () => void;
@@ -48,32 +61,43 @@ type StoredState = {
   onboardingComplete: boolean;
   user: UserProfile;
   demo: DemoPersistedState;
-  novaMode: NovaMode;
+  plate?: OnboardingPlateItem[];
+  assignments?: OnboardingAssignment[];
+  userPlan?: UserPlan | null;
 };
 
+function readStoredState(): StoredState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StoredState;
+  } catch {
+    return null;
+  }
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const loadStored = (): StoredState | null => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as StoredState;
-    } catch {
-      return null;
-    }
-  };
-
-  const stored = loadStored();
-
+  const [hydrated] = useState(() => typeof window !== "undefined");
+  const [stored] = useState(() => readStoredState());
   const [onboardingComplete, setOnboardingComplete] = useState(
-    Boolean(stored?.onboardingComplete)
+    () => stored?.onboardingComplete ?? false
   );
-  const [user, setUser] = useState<UserProfile>(stored?.user ?? defaultUser);
-  const [demo, setDemo] = useState<DemoPersistedState>(
-    stored?.demo ? { ...initialDemoState, ...stored.demo } : initialDemoState
+  const [user, setUser] = useState<UserProfile>(
+    () => stored?.user ?? defaultUser
   );
-  const [novaMode, setNovaModeState] = useState<NovaMode>(
-    stored?.novaMode ?? "gentle"
+  const [demo, setDemo] = useState<DemoPersistedState>(() => ({
+    ...initialDemoState,
+    ...stored?.demo,
+  }));
+  const [plate, setPlate] = useState<OnboardingPlateItem[]>(
+    () => stored?.plate ?? []
+  );
+  const [assignments, setAssignments] = useState<OnboardingAssignment[]>(
+    () => stored?.assignments ?? []
+  );
+  const [userPlan, setUserPlan] = useState<UserPlan | null>(
+    () => stored?.userPlan ?? null
   );
 
   const persist = useCallback(
@@ -83,17 +107,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
           next.onboardingComplete ?? onboardingComplete,
         user: next.user ?? user,
         demo: next.demo ?? demo,
-        novaMode: next.novaMode ?? novaMode,
+        plate: next.plate ?? plate,
+        assignments: next.assignments ?? assignments,
+        userPlan: next.userPlan !== undefined ? next.userPlan : userPlan,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     },
-    [onboardingComplete, user, demo, novaMode]
+    [onboardingComplete, user, demo, plate, assignments, userPlan]
   );
 
-  const completeOnboarding = useCallback((profile: UserProfile) => {
+  const completeOnboarding = useCallback((input: CompleteOnboardingInput) => {
+    const profile = {
+      ...input.profile,
+      name: input.name.trim() || demoPersona.name,
+    };
     setUser(profile);
+    setPlate(input.plate);
+    setAssignments(input.assignments);
+    setUserPlan(input.plan);
     setOnboardingComplete(true);
-    const demoState = { ...initialDemoState };
+    const demoState = { ...initialDemoState, canvasSynced: true };
     setDemo(demoState);
     localStorage.setItem(
       STORAGE_KEY,
@@ -101,7 +134,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         onboardingComplete: true,
         user: profile,
         demo: demoState,
-        novaMode: "gentle" as NovaMode,
+        plate: input.plate,
+        assignments: input.assignments,
+        userPlan: input.plan,
       })
     );
   }, []);
@@ -111,7 +146,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOnboardingComplete(false);
     setUser(defaultUser);
     setDemo(initialDemoState);
-    setNovaModeState("gentle");
+    setPlate([]);
+    setAssignments([]);
+    setUserPlan(null);
   }, []);
 
   const updateDemo = useCallback(
@@ -155,13 +192,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     persist({ demo: initialDemoState });
   }, [persist]);
 
-  const setNovaMode = useCallback(
-    (m: NovaMode) => {
-      setNovaModeState(m);
-      persist({ novaMode: m });
-    },
-    [persist]
-  );
+  if (!hydrated) {
+    return null;
+  }
 
   return (
     <AppContext.Provider
@@ -169,8 +202,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         onboardingComplete,
         user,
         demo,
-        novaMode,
-        setNovaMode,
+        plate,
+        assignments,
+        userPlan,
         completeOnboarding,
         resetOnboarding,
         completeCanvasSync,

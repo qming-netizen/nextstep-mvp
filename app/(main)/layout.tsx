@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { AppShell } from "@/components/AppShell";
+import { DeviceShell } from "@/components/DeviceShell";
 import { useApp } from "@/context/AppContext";
 
 export default function MainLayout({
@@ -14,8 +15,15 @@ export default function MainLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { onboardingComplete, demo } = useApp();
+  const isFocusMode = pathname.startsWith("/focus-mode");
+  const hideNav =
+    isFocusMode || pathname.startsWith("/recovery-trigger");
+  const isDarkScreen = isFocusMode;
+
   const showFlowHint = useMemo(
-    () => !pathname.startsWith("/recovery"),
+    () =>
+      !pathname.startsWith("/recovery") &&
+      !pathname.startsWith("/recovery-trigger"),
     [pathname]
   );
 
@@ -31,11 +39,17 @@ export default function MainLayout({
 
   if (!onboardingComplete || !demo.canvasSynced) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8F6FC]">
+      <div className="fixed inset-0 grid place-items-center bg-[#1c1c1e]">
         <div className="h-8 w-8 animate-pulse rounded-full bg-violet-200" />
       </div>
     );
   }
 
-  return <AppShell showFlowHint={showFlowHint}>{children}</AppShell>;
+  return (
+    <DeviceShell variant={isDarkScreen ? "dark" : "light"}>
+      <AppShell showNav={!hideNav} showFlowHint={showFlowHint}>
+        {children}
+      </AppShell>
+    </DeviceShell>
+  );
 }

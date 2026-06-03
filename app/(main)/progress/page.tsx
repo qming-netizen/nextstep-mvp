@@ -6,7 +6,6 @@ import { Award, Calendar, TrendingUp } from "lucide-react";
 import { NovaCard } from "@/components/NovaCard";
 import { PageHeader } from "@/components/PageHeader";
 import { ScrollArea } from "@/components/ScrollArea";
-import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import {
   todayStatsInitial,
   todayStatsAfterFocus,
@@ -15,11 +14,10 @@ import {
   tasks,
 } from "@/lib/mock-data";
 import { nova } from "@/lib/nova-copy";
-import { memoryNudge } from "@/lib/nova-persona";
 import { useApp } from "@/context/AppContext";
 
 export default function ProgressPage() {
-  const { user, demo, novaMode } = useApp();
+  const { user, demo } = useApp();
   const stats = demo.focusCompleted ? todayStatsAfterFocus : todayStatsInitial;
   const weekly = demo.focusCompleted
     ? weeklyProgressAfterFocus
@@ -32,10 +30,14 @@ export default function ProgressPage() {
       <ScrollArea>
         <div className="space-y-4 px-5 pb-6">
           <NovaCard
+            character={demo.focusCompleted ? "success" : "happy"}
             message={
               demo.focusCompleted
-                ? nova.progressReinforce
-                : `When you're ready, ${user.name.split(" ")[0]}, we'll track momentum here — without turning it into a scoreboard.`
+                ? "Nice work. You're back on track."
+                : `Hey ${user.name.split(" ")[0]} — we'll celebrate small wins here.`
+            }
+            subtitle={
+              demo.focusCompleted ? nova.progressReinforce : undefined
             }
             compact
           />
@@ -105,8 +107,6 @@ export default function ProgressPage() {
               ))}
             </div>
           </section>
-
-          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "progress" })} />
 
           {demo.focusCompleted && (
             <section>

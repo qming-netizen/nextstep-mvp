@@ -1,23 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Check, Clock, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, ChevronDown, Clock, Sparkles } from "lucide-react";
 import { NovaCard } from "@/components/NovaCard";
 import { PageHeader } from "@/components/PageHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScrollArea } from "@/components/ScrollArea";
-import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
-import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import { focusPlanBlocks, focusRecommendation } from "@/lib/mock-data";
 import { nova } from "@/lib/nova-copy";
-import { memoryNudge } from "@/lib/nova-persona";
 import { useApp } from "@/context/AppContext";
 
 export default function FocusPlanPage() {
   const router = useRouter();
-  const { demo, acceptPlan, novaMode } = useApp();
+  const { demo, acceptPlan } = useApp();
+  const [showWhy, setShowWhy] = useState(false);
 
   const handleAccept = () => {
     acceptPlan();
@@ -34,45 +33,46 @@ export default function FocusPlanPage() {
       <ScrollArea>
         <div className="space-y-4 px-5 pb-6">
           <NovaCard
-            message={nova.focusPlanExplain}
+            character="focus"
+            message="Here's the most realistic sequence for tonight."
             subtitle={nova.focusPlanAccept}
           />
 
-          <NovaReasoningCard
-            title="Reasoning + tradeoffs"
-            model={{
-              whyNow: [
-                "Biology is the anchor task in this week’s deadline cluster",
-                "A single deep block beats spreading stress across the whole night",
-                "The plan matches your evening energy pattern",
-              ],
-              sources: ["canvas", "preferences", "completionPatterns"],
-              estimatedEffort: focusRecommendation.workloadEstimate,
-              confidence: "Medium",
-              tradeoff:
-                "This plan prioritizes sustainability over speed — Calculus stays intentionally light tonight.",
-              approval: {
-                primary: "Accept tonight’s plan",
-                secondary: "Adjust something",
-              },
-            }}
-          />
-
-          <section className="rounded-2xl border border-violet-100/80 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
+          <section className="rounded-2xl border border-violet-100/80 bg-white/90 p-4 shadow-sm">
             <div className="flex items-center gap-2 text-violet-600">
               <Sparkles size={18} />
-              <span className="text-[13px] font-semibold">Why Biology first</span>
+              <span className="text-[13px] font-semibold">Tonight&apos;s anchor</span>
             </div>
             <h3 className="mt-2 text-[18px] font-semibold text-[#1a1625]">
               {focusRecommendation.subject} lab report
             </h3>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#6b6578]">
-              {focusRecommendation.reasoning}
-            </p>
-            <div className="mt-3 flex items-center gap-1.5 text-[12px] text-[#6b6578]">
+            <div className="mt-2 flex items-center gap-1.5 text-[12px] text-[#6b6578]">
               <Clock size={14} />
               {focusRecommendation.workloadEstimate}
             </div>
+            <button
+              type="button"
+              onClick={() => setShowWhy((v) => !v)}
+              className="mt-3 flex w-full items-center justify-between text-[13px] font-medium text-violet-600"
+            >
+              Why this first?
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${showWhy ? "rotate-180" : ""}`}
+              />
+            </button>
+            <AnimatePresence>
+              {showWhy && (
+                <motion.p
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden text-[13px] leading-relaxed text-[#6b6578]"
+                >
+                  <span className="block pt-2">{focusRecommendation.reasoning}</span>
+                </motion.p>
+              )}
+            </AnimatePresence>
           </section>
 
           <section>
@@ -135,8 +135,6 @@ export default function FocusPlanPage() {
               Schedule changed? Open recovery
             </Link>
           </div>
-
-          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "task" })} />
         </div>
       </ScrollArea>
     </>

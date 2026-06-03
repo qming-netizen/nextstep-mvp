@@ -1,24 +1,16 @@
 "use client";
 
 import { use } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  Check,
-  Circle,
-  Pencil,
-  Play,
-  Feather,
-} from "lucide-react";
+import { Check, Circle, Coffee, Play, Target } from "lucide-react";
 import { NovaCard } from "@/components/NovaCard";
 import { PageHeader } from "@/components/PageHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScrollArea } from "@/components/ScrollArea";
-import { NovaReasoningCard } from "@/components/nova/NovaReasoningCard";
-import { NovaMemoryCard } from "@/components/nova/NovaMemoryCard";
 import { tasks } from "@/lib/mock-data";
-import { nova } from "@/lib/nova-copy";
 import { useApp } from "@/context/AppContext";
-import { memoryNudge } from "@/lib/nova-persona";
 import { notFound } from "next/navigation";
 
 export default function TaskBreakdownPage({
@@ -27,81 +19,115 @@ export default function TaskBreakdownPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { demo, novaMode } = useApp();
-  const task = tasks.find((t) => t.id === id);
+  const router = useRouter();
+  const { demo, userPlan, acceptPlan } = useApp();
+
+  const planTask = userPlan?.tasks.find((t) => t.id === id);
+  const mockTask = tasks.find((t) => t.id === id);
+  const task = planTask
+    ? {
+        subject: planTask.subject,
+        title: planTask.title,
+        dueLabel: planTask.dueLabel,
+        estimatedMinutes: planTask.minutes,
+        steps: planTask.steps.map((s) => ({
+          ...s,
+          status: s.status as "pending" | "done",
+        })),
+        reason: planTask.reason,
+        emoji: planTask.emoji,
+        order: planTask.order,
+      }
+    : mockTask
+      ? {
+          subject: mockTask.subject,
+          title: mockTask.title,
+          dueLabel: mockTask.dueLabel,
+          estimatedMinutes: mockTask.estimatedMinutes,
+          steps: mockTask.steps,
+          reason: null as string | null,
+          emoji: null as string | null,
+          order: 1,
+        }
+      : null;
+
   if (!task) notFound();
 
   const doneSteps = task.steps.filter((s) => s.status === "done").length;
   const progress = Math.round((doneSteps / task.steps.length) * 100);
+  const isHero = userPlan?.heroTaskId === id;
+  const otherTasks =
+    userPlan?.tasks.filter((t) => t.id !== id).sort((a, b) => a.order - b.order) ??
+    [];
 
   return (
     <>
       <PageHeader
-        title={task.subject}
+        title={isHero ? "Your plan" : task.subject}
         subtitle={task.title}
-        backHref="/tasks"
+        backHref={userPlan ? "/home" : "/tasks"}
       />
       <ScrollArea>
-        <div className="space-y-4 px-5 pb-4">
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
+        <div className="space-y-4 px-5 pb-6">
+          <NovaCard
+            character="focus"
+            message={
+              isHero
+                ? "Let's tackle this first — most realistic next step."
+                : "Small bites only. You've got this."
+            }
+            compact
+          />
+
+          {isHero && (
+            <div className="rounded-3xl border-2 border-emerald-200 bg-emerald-50/80 p-5 text-center">
+              <span className="text-3xl">🚀</span>
+              <p className="mt-2 text-[17px] font-bold text-[#1a1625]">
+                Starting: {task.title}
+              </p>
+              <p className="mt-1 text-[14px] text-emerald-700">
+                {task.estimatedMinutes} min · You&apos;ve got this
+              </p>
+            </div>
+          )}
+
+          {task.reason && (
+            <p className="rounded-2xl bg-violet-50/80 px-4 py-3 text-[14px] leading-relaxed text-[#6b6578]">
+              {task.reason}
+            </p>
+          )}
+
+          <div className="rounded-3xl bg-white/90 p-4 shadow-sm backdrop-blur-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-[#6b6578]">Progress</span>
-              <span className="text-[13px] font-semibold text-violet-600">
+              <span className="text-[14px] text-[#6b6578]">Progress</span>
+              <span className="text-[14px] font-semibold text-violet-600">
                 {progress}%
               </span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-violet-100">
+            <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-violet-100">
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-2 text-[12px] text-[#6b6578]">
-              ~{task.estimatedMinutes} min total · {task.dueLabel}
+            <p className="mt-2 text-[13px] text-[#6b6578]">
+              ~{task.estimatedMinutes} min · {task.dueLabel}
             </p>
           </div>
 
-          <NovaCard message={nova.taskBreakdown} compact />
-
-          {!demo.planAccepted && (
-            <p className="rounded-xl bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
-              Accept tonight&apos;s plan on the focus screen before starting.
-            </p>
-          )}
-
-          <NovaReasoningCard
-            title="Why these steps"
-            model={{
-              whyNow: [
-                "Micro-steps reduce overwhelm and make starting easier",
-                "Methods first keeps you from drafting without structure",
-                "Each step stays under ~15 minutes to protect momentum",
-              ],
-              sources: ["canvas", "preferences", "completionPatterns"],
-              estimatedEffort: `~${task.estimatedMinutes} min · 5 steps`,
-              confidence: "Medium",
-              tradeoff:
-                "Breaking it down adds a little overhead, but it prevents avoidance and last-minute panic.",
-              approval: {
-                primary: demo.planAccepted ? "Start focus" : "Accept plan first",
-                secondary: "Adjust steps",
-              },
-            }}
-          />
-
           <section>
-            <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wider text-[#9b95a8]">
-              Micro-steps
+            <h2 className="mb-3 text-[15px] font-semibold text-[#1a1625]">
+              Break it down
             </h2>
             <div className="space-y-2">
               {task.steps.map((step, i) => (
                 <div
                   key={step.id}
-                  className={`flex items-start gap-3 rounded-2xl p-4 ${
+                  className={`flex items-start gap-3 rounded-3xl p-4 ${
                     step.status === "done"
-                      ? "bg-emerald-50/50"
-                      : "bg-white shadow-sm"
+                      ? "bg-emerald-50/60"
+                      : "bg-white/90 shadow-sm"
                   }`}
                 >
                   <div className="mt-0.5">
@@ -132,31 +158,61 @@ export default function TaskBreakdownPage({
             </div>
           </section>
 
-          <div className="space-y-2.5">
-            <PrimaryButton
-              href={demo.planAccepted ? "/focus-mode" : "/focus"}
-            >
-              <span className="flex items-center gap-2">
-                <Play size={18} fill="currentColor" />
-                {demo.planAccepted ? "Start focus" : "Accept plan first"}
-              </span>
-            </PrimaryButton>
-            <PrimaryButton href="/recovery" variant="soft">
-              <span className="flex items-center gap-2">
-                <Feather size={18} />
-                Schedule changed?
-              </span>
-            </PrimaryButton>
+          {otherTasks.length > 0 && (
+            <section>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9b95a8]">
+                Then
+              </p>
+              {otherTasks.map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/tasks/${t.id}`}
+                  className="mb-2 block rounded-3xl bg-white/90 p-4 shadow-sm"
+                >
+                  <p className="text-[11px] font-semibold text-[#9b95a8]">
+                    THEN #{t.order}
+                  </p>
+                  <p className="text-[15px] font-semibold text-[#1a1625]">
+                    {t.title}
+                  </p>
+                  <p className="text-[13px] text-[#9b95a8]">{t.minutes} min</p>
+                </Link>
+              ))}
+              <p className="text-center text-[13px] text-[#9b95a8]">
+                Start with #1 and don&apos;t think about the rest yet.
+              </p>
+            </section>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              className="flex h-11 w-full items-center justify-center gap-2 text-[14px] font-medium text-violet-600"
+              className="flex flex-col items-center gap-1 rounded-3xl border border-rose-100 bg-white py-4 text-[13px] font-medium text-rose-600"
             >
-              <Pencil size={16} />
-              Edit steps
+              <Coffee size={20} />
+              Coffee break first
             </button>
+            <PrimaryButton
+              href="/focus-mode"
+              variant="soft"
+              className="!h-auto flex-col gap-1 py-4"
+            >
+              <Target size={20} />
+              Focus mode
+            </PrimaryButton>
           </div>
 
-          <NovaMemoryCard text={memoryNudge({ mode: novaMode, context: "task" })} />
+          <PrimaryButton
+            onClick={() => {
+              if (!demo.planAccepted) acceptPlan();
+              router.push("/focus-mode");
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <Play size={18} fill="currentColor" />
+              {demo.planAccepted ? "Start focus" : "Lock in & start"}
+            </span>
+          </PrimaryButton>
         </div>
       </ScrollArea>
     </>

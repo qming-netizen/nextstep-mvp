@@ -17,14 +17,12 @@ export function AppShell({
   className = "",
 }: AppShellProps) {
   return (
-    <div className="mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col bg-[#F8F6FC]">
-      <div
-        className={`flex min-h-0 flex-1 flex-col overflow-hidden ${className}`}
-      >
+    <div className={`flex min-h-0 flex-1 flex-col overflow-hidden ${className}`}>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {children}
       </div>
       {showFlowHint && showNav && <FlowHint />}
-      {showNav && <div className="h-[72px] shrink-0" aria-hidden />}
+      {showNav && <div className="h-[60px] shrink-0" aria-hidden />}
       {showNav && <BottomNav />}
     </div>
   );

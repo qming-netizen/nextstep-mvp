@@ -33,14 +33,55 @@ export interface UserProfile {
   studyStyle: string[];
   pacing: string;
   energyPattern: string;
+  /** Playful onboarding */
+  moodId?: string;
+  timeAvailableMin?: number;
+  energyLevel?: string;
+  todayWin?: string;
+  todayWinCustom?: string;
 }
 
-export interface OnboardingState {
-  step: number;
-  hardest: string[];
-  studyStyle: string[];
-  pacing: string;
-  energyPattern: string;
-  name: string;
-  email: string;
+export interface OnboardingPlateItem {
+  subjectId: string;
+  dueWhen: string;
+  customTitle?: string;
+}
+
+export interface OnboardingAssignment {
+  id: string;
+  subjectId: string;
+  title: string;
+  dueWhen: string;
+  source: "canvas" | "google" | "upload" | "voice";
+  fileName?: string;
+}
+
+export interface UserPlanStep {
+  id: string;
+  title: string;
+  estimatedMinutes: number;
+  status: "pending" | "done";
+}
+
+export interface UserPlanTask {
+  id: string;
+  order: number;
+  subjectId: string;
+  subject: string;
+  emoji: string;
+  title: string;
+  minutes: number;
+  dueLabel: string;
+  reason: string;
+  accentClass: string;
+  steps: UserPlanStep[];
+}
+
+export interface UserPlan {
+  tasks: UserPlanTask[];
+  heroTaskId: string;
+  totalMinutes: number;
+  weeklyHours: number;
+  novaIntro: string;
+  novaConfirm: string;
 }
