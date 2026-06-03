@@ -20,7 +20,7 @@ export const demoSteps: DemoStep[] = [
   { id: "plan", label: "Plan" },
   { id: "breakdown", label: "Steps" },
   { id: "focus", label: "Focus" },
-  { id: "progress", label: "Progress" },
+  { id: "progress", label: "Calendar" },
 ];
 
 export interface DemoPersistedState {
@@ -47,7 +47,8 @@ export function getActiveDemoStep(
   if (pathname.startsWith("/canvas-sync")) return "canvas";
   if (pathname.startsWith("/recovery")) return "recovery";
   if (pathname.startsWith("/focus-mode")) return "focus";
-  if (pathname.startsWith("/progress")) return "progress";
+  if (pathname.startsWith("/calendar") || pathname.startsWith("/progress"))
+    return "progress";
   if (pathname.startsWith("/tasks/")) return "breakdown";
   if (pathname.startsWith("/focus")) return "plan";
   if (pathname.startsWith("/home")) return "dashboard";
@@ -127,11 +128,15 @@ export function getFlowHint(
     return null;
   }
 
-  if (pathname !== "/progress" && !pathname.startsWith("/recovery")) {
+  if (
+    pathname !== "/calendar" &&
+    !pathname.startsWith("/progress") &&
+    !pathname.startsWith("/recovery")
+  ) {
     return {
-      message: "Session complete. See how your momentum shifted.",
-      href: "/progress",
-      cta: "View progress",
+      message: "Session complete. See your week at a glance.",
+      href: "/calendar",
+      cta: "Open calendar",
     };
   }
 

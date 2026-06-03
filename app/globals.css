@@ -49,3 +49,12 @@ select {
   width: 0;
   background: transparent;
 }
+
+/* Happy Nova — transparent PNG, no box on light UI */
+.nova-happy-img {
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  background: transparent;
+}

@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -39,6 +40,8 @@ interface AppContextValue {
   completeCanvasSync: () => void;
   acceptPlan: () => void;
   completeFocusSession: () => void;
+  completedMicroSteps: string[];
+  completeMicroStep: (stepId: string) => void;
   triggerRecoveryDemo: () => void;
   applyRecovery: () => void;
   resetDemoFlow: () => void;
@@ -64,6 +67,7 @@ type StoredState = {
   plate?: OnboardingPlateItem[];
   assignments?: OnboardingAssignment[];
   userPlan?: UserPlan | null;
+  completedMicroSteps?: string[];
 };
 
 function readStoredState(): StoredState | null {
@@ -78,27 +82,28 @@ function readStoredState(): StoredState | null {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [hydrated] = useState(() => typeof window !== "undefined");
-  const [stored] = useState(() => readStoredState());
-  const [onboardingComplete, setOnboardingComplete] = useState(
-    () => stored?.onboardingComplete ?? false
-  );
-  const [user, setUser] = useState<UserProfile>(
-    () => stored?.user ?? defaultUser
-  );
-  const [demo, setDemo] = useState<DemoPersistedState>(() => ({
-    ...initialDemoState,
-    ...stored?.demo,
-  }));
-  const [plate, setPlate] = useState<OnboardingPlateItem[]>(
-    () => stored?.plate ?? []
-  );
-  const [assignments, setAssignments] = useState<OnboardingAssignment[]>(
-    () => stored?.assignments ?? []
-  );
-  const [userPlan, setUserPlan] = useState<UserPlan | null>(
-    () => stored?.userPlan ?? null
-  );
+  const [hydrated, setHydrated] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [user, setUser] = useState<UserProfile>(defaultUser);
+  const [demo, setDemo] = useState<DemoPersistedState>(initialDemoState);
+  const [plate, setPlate] = useState<OnboardingPlateItem[]>([]);
+  const [assignments, setAssignments] = useState<OnboardingAssignment[]>([]);
+  const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
+  const [completedMicroSteps, setCompletedMicroSteps] = useState<string[]>([]);
+
+  useEffect(() => {
+    const stored = readStoredState();
+    if (stored) {
+      setOnboardingComplete(stored.onboardingComplete ?? false);
+      setUser(stored.user ?? defaultUser);
+      setDemo({ ...initialDemoState, ...stored.demo });
+      setPlate(stored.plate ?? []);
+      setAssignments(stored.assignments ?? []);
+      setUserPlan(stored.userPlan ?? null);
+      setCompletedMicroSteps(stored.completedMicroSteps ?? []);
+    }
+    setHydrated(true);
+  }, []);
 
   const persist = useCallback(
     (next: Partial<StoredState>) => {
@@ -110,10 +115,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         plate: next.plate ?? plate,
         assignments: next.assignments ?? assignments,
         userPlan: next.userPlan !== undefined ? next.userPlan : userPlan,
+        completedMicroSteps:
+          next.completedMicroSteps ?? completedMicroSteps,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     },
-    [onboardingComplete, user, demo, plate, assignments, userPlan]
+    [
+      onboardingComplete,
+      user,
+      demo,
+      plate,
+      assignments,
+      userPlan,
+      completedMicroSteps,
+    ]
   );
 
   const completeOnboarding = useCallback((input: CompleteOnboardingInput) => {
@@ -149,6 +164,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPlate([]);
     setAssignments([]);
     setUserPlan(null);
+    setCompletedMicroSteps([]);
   }, []);
 
   const updateDemo = useCallback(
@@ -177,6 +193,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [updateDemo]
   );
 
+  const completeMicroStep = useCallback(
+    (stepId: string) => {
+      setCompletedMicroSteps((prev) => {
+        if (prev.includes(stepId)) return prev;
+        const next = [...prev, stepId];
+        persist({ completedMicroSteps: next });
+        return next;
+      });
+    },
+    [persist]
+  );
+
   const triggerRecoveryDemo = useCallback(
     () => updateDemo({ recoveryTriggered: true, recoveryApplied: false }),
     [updateDemo]
@@ -193,7 +221,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [persist]);
 
   if (!hydrated) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8F6FC]">
+        <div className="h-8 w-8 animate-pulse rounded-full bg-violet-200" />
+      </div>
+    );
   }
 
   return (
@@ -210,6 +242,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         completeCanvasSync,
         acceptPlan,
         completeFocusSession,
+        completedMicroSteps,
+        completeMicroStep,
         triggerRecoveryDemo,
         applyRecovery,
         resetDemoFlow,

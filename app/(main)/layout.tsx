@@ -17,11 +17,16 @@ export default function MainLayout({
   const { onboardingComplete, demo } = useApp();
   const isFocusMode = pathname.startsWith("/focus-mode");
   const hideNav =
-    isFocusMode || pathname.startsWith("/recovery-trigger");
+    isFocusMode ||
+    pathname.startsWith("/recovery-trigger") ||
+    pathname.startsWith("/recharge") ||
+    pathname.startsWith("/focus-session");
   const isDarkScreen = isFocusMode;
 
   const showFlowHint = useMemo(
     () =>
+      pathname !== "/home" &&
+      pathname !== "/calendar" &&
       !pathname.startsWith("/recovery") &&
       !pathname.startsWith("/recovery-trigger"),
     [pathname]

@@ -49,7 +49,7 @@ export default function FocusModePage() {
 
   const handleComplete = () => {
     completeFocusSession();
-    router.push("/progress");
+    router.push("/calendar");
   };
 
   const mins = Math.floor(secondsLeft / 60);

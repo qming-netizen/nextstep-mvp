@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ListTodo, TrendingUp, Settings } from "lucide-react";
+import { Home, ListTodo, Calendar, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 
 const tabs = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/tasks", label: "Tasks", icon: ListTodo },
-  { href: "/progress", label: "Progress", icon: TrendingUp },
+  { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

@@ -3,41 +3,133 @@
 import { motion } from "framer-motion";
 import type { NovaCharacterState } from "@/lib/nova-character";
 import {
+  NOVA_CALENDAR_ASPECT,
+  NOVA_CALENDAR_SRC,
+  NOVA_CALENDAR_SRC_2X,
+  NOVA_FOCUS_ASPECT,
+  NOVA_FOCUS_SRC,
+  NOVA_FOCUS_SRC_2X,
   NOVA_HAPPY_ASPECT,
   NOVA_HAPPY_SRC,
-  novaStateIndex,
+  NOVA_HAPPY_SRC_2X,
+  NOVA_JOURNAL_ASPECT,
+  NOVA_JOURNAL_SRC,
+  NOVA_JOURNAL_SRC_2X,
+  type NovaArtwork,
+  novaStateLabels,
 } from "@/lib/nova-character";
 
 export interface NovaCharacterProps {
   state?: NovaCharacterState;
-  /** Width in px; height follows asset aspect ratio for happy Nova */
+  /** Override artwork — use "calendar" on Calendar page, "journal" on Talk with Nova */
+  artwork?: NovaArtwork;
+  /** Width in px; height follows asset aspect ratio */
   size?: number;
   float?: boolean;
   glow?: boolean;
-  /** Larger hero treatment for Meet Nova (sparkles + glow) */
+  /** Larger hero treatment for Meet Nova */
   presentation?: "default" | "hero";
   className?: string;
 }
 
+function NovaGlow({
+  width,
+  height,
+  hero,
+  variant,
+}: {
+  width: number;
+  height: number;
+  hero: boolean;
+  variant: "happy" | "focus" | "calendar" | "journal";
+}) {
+  const glowSize = Math.round(Math.max(width, height) * (hero ? 1.08 : 0.95));
+  const focusGradient =
+    "radial-gradient(circle at 50% 45%, rgba(196, 181, 253, 0.5) 0%, rgba(167, 139, 250, 0.2) 42%, transparent 72%)";
+  const happyGradient =
+    "radial-gradient(circle at 50% 45%, rgba(233, 213, 255, 0.45) 0%, rgba(251, 207, 232, 0.18) 40%, transparent 72%)";
+  const calendarGradient =
+    "radial-gradient(circle at 50% 45%, rgba(221, 214, 254, 0.48) 0%, rgba(251, 207, 232, 0.16) 42%, transparent 72%)";
+  const journalGradient =
+    "radial-gradient(circle at 50% 45%, rgba(233, 213, 255, 0.5) 0%, rgba(251, 207, 232, 0.2) 42%, transparent 72%)";
+
+  const gradient =
+    variant === "focus"
+      ? focusGradient
+      : variant === "calendar"
+        ? calendarGradient
+        : variant === "journal"
+          ? journalGradient
+          : happyGradient;
+
+  return (
+    <div
+      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      style={{ width: glowSize, height: glowSize }}
+      aria-hidden
+    >
+      <div
+        className="h-full w-full rounded-full"
+        style={{
+          background: gradient,
+        }}
+      />
+    </div>
+  );
+}
+
+function getNovaAsset(state: NovaCharacterState, artwork: NovaArtwork = "auto") {
+  if (artwork === "journal") {
+    return {
+      src: NOVA_JOURNAL_SRC,
+      src2x: NOVA_JOURNAL_SRC_2X,
+      aspect: NOVA_JOURNAL_ASPECT,
+      variant: "journal" as const,
+    };
+  }
+  if (artwork === "calendar") {
+    return {
+      src: NOVA_CALENDAR_SRC,
+      src2x: NOVA_CALENDAR_SRC_2X,
+      aspect: NOVA_CALENDAR_ASPECT,
+      variant: "calendar" as const,
+    };
+  }
+  if (state === "focus") {
+    return {
+      src: NOVA_FOCUS_SRC,
+      src2x: NOVA_FOCUS_SRC_2X,
+      aspect: NOVA_FOCUS_ASPECT,
+      variant: "focus" as const,
+    };
+  }
+  return {
+    src: NOVA_HAPPY_SRC,
+    src2x: NOVA_HAPPY_SRC_2X,
+    aspect: NOVA_HAPPY_ASPECT,
+    variant: "happy" as const,
+  };
+}
+
 export function NovaCharacter({
   state = "happy",
+  artwork = "auto",
   size = 96,
   float = true,
   glow = true,
   presentation = "default",
   className = "",
 }: NovaCharacterProps) {
-  const isHappy = state === "happy";
-  const isHero = isHappy && presentation === "hero";
-  const column = novaStateIndex[state];
-  const positionX = column * 25;
+  const isHero = presentation === "hero";
+  const asset = getNovaAsset(state, artwork);
   const width = size;
-  const height = isHappy ? Math.round(size * NOVA_HAPPY_ASPECT) : size;
+  const height = Math.round(size * asset.aspect);
+  const useCrispShadow = size >= 56;
 
   return (
     <motion.div
-      className={`relative mx-auto shrink-0 ${className}`}
-      style={{ width, height: isHappy ? height : size }}
+      className={`relative mx-auto shrink-0 bg-transparent ${className}`}
+      style={{ width, height }}
       animate={float ? { y: [0, -4, 0] } : undefined}
       transition={
         float
@@ -45,81 +137,83 @@ export function NovaCharacter({
           : undefined
       }
       role="img"
-      aria-label={state}
+      aria-label={
+        artwork === "calendar"
+          ? "Nova with calendar"
+          : artwork === "journal"
+            ? "Nova journaling"
+            : novaStateLabels[state]
+      }
     >
       {glow && (
-        <>
-          <div
-            className={`absolute inset-0 rounded-full bg-violet-400/30 blur-2xl ${
-              isHero ? "scale-125" : "scale-110"
-            }`}
-            aria-hidden
-          />
-          <div
-            className={`absolute inset-[8%] rounded-full bg-purple-500/15 blur-xl ${
-              isHero ? "scale-110" : "scale-105"
-            }`}
-            aria-hidden
-          />
-          {isHero && (
-            <div
-              className="absolute inset-[-12%] rounded-full bg-pink-300/20 blur-3xl"
-              aria-hidden
-            />
-          )}
-        </>
+        <NovaGlow
+          width={width}
+          height={height}
+          hero={isHero}
+          variant={asset.variant}
+        />
       )}
-      {isHero && (
+
+      {isHero && asset.variant === "happy" && (
         <div className="pointer-events-none absolute inset-0 z-[5]" aria-hidden>
           {[
-            { top: "8%", left: "18%", delay: 0 },
-            { top: "22%", right: "12%", delay: 0.4 },
-            { bottom: "28%", left: "8%", delay: 0.8 },
-            { top: "42%", right: "22%", delay: 1.2 },
+            { top: "10%", left: "20%", delay: 0 },
+            { top: "24%", right: "14%", delay: 0.5 },
+            { bottom: "26%", left: "12%", delay: 1 },
           ].map((s, i) => (
             <motion.span
               key={i}
-              className="absolute h-1.5 w-1.5 rounded-full bg-violet-300/80"
+              className="absolute h-1 w-1 rounded-full bg-violet-300/70"
               style={{
                 top: s.top,
                 left: s.left,
                 right: s.right,
                 bottom: s.bottom,
               }}
-              animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+              animate={{ opacity: [0.2, 0.9, 0.2] }}
               transition={{
-                duration: 2.2,
+                duration: 2.4,
                 repeat: Infinity,
                 delay: s.delay,
-                ease: "easeInOut",
               }}
             />
           ))}
         </div>
       )}
-      {isHappy ? (
-        <img
-          src={NOVA_HAPPY_SRC}
-          alt="Happy Nova"
-          className="relative z-10 h-full w-full object-contain object-center"
-          style={{
-            filter: isHero
-              ? "drop-shadow(0 8px 20px rgba(124, 92, 252, 0.28))"
-              : "drop-shadow(0 6px 16px rgba(124, 92, 252, 0.22))",
-          }}
-          draggable={false}
-        />
-      ) : (
-        <div
-          className="relative z-10 h-full w-full bg-no-repeat"
-          style={{
-            backgroundImage: "url(/nova-characters-sheet.png)",
-            backgroundSize: "500% 100%",
-            backgroundPosition: `${positionX}% center`,
-            filter: "drop-shadow(0 6px 16px rgba(124, 92, 252, 0.22))",
-          }}
-        />
-      )}
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={asset.src}
+        srcSet={`${asset.src} 1x, ${asset.src2x} 2x`}
+        alt={
+          artwork === "calendar"
+            ? "Nova with calendar"
+            : artwork === "journal"
+              ? "Nova journaling"
+              : novaStateLabels[state]
+        }
+        width={width}
+        height={height}
+        decoding="async"
+        className="nova-happy-img relative z-10 h-full w-full object-contain object-center"
+        style={
+          useCrispShadow
+            ? {
+                filter:
+                  asset.variant === "focus"
+                    ? "drop-shadow(0 2px 6px rgba(124, 92, 252, 0.1))"
+                    : asset.variant === "calendar"
+                      ? "drop-shadow(0 2px 5px rgba(124, 92, 252, 0.08))"
+                      : asset.variant === "journal"
+                        ? "drop-shadow(0 2px 5px rgba(124, 92, 252, 0.08))"
+                        : isHero
+                          ? "drop-shadow(0 3px 10px rgba(124, 92, 252, 0.12))"
+                          : "drop-shadow(0 2px 5px rgba(124, 92, 252, 0.08))",
+              }
+            : undefined
+        }
+        draggable={false}
+      />
     </motion.div>
   );
 }
