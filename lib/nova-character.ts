@@ -17,11 +17,16 @@ export const NOVA_CALENDAR_SRC_2X = "/nova-calendar@2x.png?v=1";
 export const NOVA_JOURNAL_SRC = "/nova-journal.png?v=1";
 export const NOVA_JOURNAL_SRC_2X = "/nova-journal@2x.png?v=1";
 
+/** Overwhelmed / stuck Nova — question mark, transparent PNG */
+export const NOVA_OVERWHELMED_SRC = "/nova-overwhelmed.png?v=1";
+export const NOVA_OVERWHELMED_SRC_2X = "/nova-overwhelmed@2x.png?v=1";
+
 /** Square asset — white-background reference, transparent edges */
 export const NOVA_HAPPY_ASPECT = 1;
 export const NOVA_FOCUS_ASPECT = 1;
 export const NOVA_CALENDAR_ASPECT = 1;
 export const NOVA_JOURNAL_ASPECT = 1;
+export const NOVA_OVERWHELMED_ASPECT = 1;
 
 export type NovaArtwork = "auto" | "calendar" | "journal";
 

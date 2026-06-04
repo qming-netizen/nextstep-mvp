@@ -15,6 +15,9 @@ import {
   NOVA_JOURNAL_ASPECT,
   NOVA_JOURNAL_SRC,
   NOVA_JOURNAL_SRC_2X,
+  NOVA_OVERWHELMED_ASPECT,
+  NOVA_OVERWHELMED_SRC,
+  NOVA_OVERWHELMED_SRC_2X,
   type NovaArtwork,
   novaStateLabels,
 } from "@/lib/nova-character";
@@ -41,7 +44,7 @@ function NovaGlow({
   width: number;
   height: number;
   hero: boolean;
-  variant: "happy" | "focus" | "calendar" | "journal";
+  variant: "happy" | "focus" | "calendar" | "journal" | "overwhelmed";
 }) {
   const glowSize = Math.round(Math.max(width, height) * (hero ? 1.08 : 0.95));
   const focusGradient =
@@ -52,6 +55,8 @@ function NovaGlow({
     "radial-gradient(circle at 50% 45%, rgba(221, 214, 254, 0.48) 0%, rgba(251, 207, 232, 0.16) 42%, transparent 72%)";
   const journalGradient =
     "radial-gradient(circle at 50% 45%, rgba(233, 213, 255, 0.5) 0%, rgba(251, 207, 232, 0.2) 42%, transparent 72%)";
+  const overwhelmedGradient =
+    "radial-gradient(circle at 50% 45%, rgba(251, 207, 232, 0.42) 0%, rgba(221, 214, 254, 0.22) 42%, transparent 72%)";
 
   const gradient =
     variant === "focus"
@@ -60,7 +65,9 @@ function NovaGlow({
         ? calendarGradient
         : variant === "journal"
           ? journalGradient
-          : happyGradient;
+          : variant === "overwhelmed"
+            ? overwhelmedGradient
+            : happyGradient;
 
   return (
     <div
@@ -101,6 +108,14 @@ function getNovaAsset(state: NovaCharacterState, artwork: NovaArtwork = "auto") 
       src2x: NOVA_FOCUS_SRC_2X,
       aspect: NOVA_FOCUS_ASPECT,
       variant: "focus" as const,
+    };
+  }
+  if (state === "overwhelmed") {
+    return {
+      src: NOVA_OVERWHELMED_SRC,
+      src2x: NOVA_OVERWHELMED_SRC_2X,
+      aspect: NOVA_OVERWHELMED_ASPECT,
+      variant: "overwhelmed" as const,
     };
   }
   return {
@@ -205,6 +220,8 @@ export function NovaCharacter({
                     : asset.variant === "calendar"
                       ? "drop-shadow(0 2px 5px rgba(124, 92, 252, 0.08))"
                       : asset.variant === "journal"
+                        ? "drop-shadow(0 2px 5px rgba(124, 92, 252, 0.08))"
+                      : asset.variant === "overwhelmed"
                         ? "drop-shadow(0 2px 5px rgba(124, 92, 252, 0.08))"
                         : isHero
                           ? "drop-shadow(0 3px 10px rgba(124, 92, 252, 0.12))"
