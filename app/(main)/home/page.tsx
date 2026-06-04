@@ -1,42 +1,37 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2 } from "lucide-react";
-import { AssignmentDashboard } from "@/components/dashboard/AssignmentDashboard";
+import { NovaDashboard } from "@/components/dashboard/NovaDashboard";
 import { ScrollArea } from "@/components/ScrollArea";
+import { activeAssignmentCount } from "@/lib/dashboard-home";
 import { demoDateLabel, demoTimeLabel } from "@/lib/nova-copy";
 import { useApp } from "@/context/AppContext";
 
 export default function HomePage() {
-  const { user, demo } = useApp();
+  const { user } = useApp();
+  const firstName = user.name.split(" ")[0];
 
   return (
     <>
-      <header className="shrink-0 px-5 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <p className="text-[13px] font-medium text-[#6b6578]">
+      <header className="shrink-0 px-5 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <p className="dashboard-label text-[13px] text-[#6b6578]">
           {demoDateLabel} · {demoTimeLabel}
         </p>
-        <h1 className="mt-0.5 text-[26px] font-semibold tracking-tight text-[#1a1625]">
-          Hey, {user.name.split(" ")[0]}
-        </h1>
+        <motion.h1
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="dashboard-heading mt-1 text-[24px] tracking-tight text-[#1a1625]"
+        >
+          Hey {firstName} 👋
+        </motion.h1>
+        <p className="dashboard-body mt-1 text-[14px] text-[#6b6578]">
+          You have {activeAssignmentCount} active assignments this week.
+        </p>
       </header>
 
-      <ScrollArea className="pb-8">
-        <div className="space-y-4 px-5">
-          <AssignmentDashboard />
-
-          {demo.planAccepted && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5"
-            >
-              <CheckCircle2 size={16} className="text-emerald-600" />
-              <p className="text-[13px] text-emerald-800">
-                Plan saved — Nova has your back this week
-              </p>
-            </motion.div>
-          )}
+      <ScrollArea className="pb-6">
+        <div className="px-5">
+          <NovaDashboard />
         </div>
       </ScrollArea>
     </>
