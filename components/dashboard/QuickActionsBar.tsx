@@ -6,8 +6,8 @@ import { Coffee, RefreshCw, Target, LifeBuoy } from "lucide-react";
 const actions = [
   { icon: Coffee, label: "Recharge Me", href: "/recharge", sub: "Take a breather" },
   { icon: Target, label: "Start Focus Session", href: "/focus-session", sub: "One step at a time" },
-  { icon: RefreshCw, label: "My Week Changed", href: "/recovery-trigger", sub: "Nova can replan" },
-  { icon: LifeBuoy, label: "Nova, I'm Stuck", href: "/recovery", sub: "Let's recover together" },
+  { icon: RefreshCw, label: "My Week Changed", href: "/replan", sub: "Rebalance my plan" },
+  { icon: LifeBuoy, label: "Nova, I'm Stuck", href: "/unstuck", sub: "Help me get started" },
 ];
 
 export function QuickActionsBar() {

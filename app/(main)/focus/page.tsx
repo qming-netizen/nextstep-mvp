@@ -129,10 +129,10 @@ export default function FocusPlanPage() {
               </>
             )}
             <Link
-              href="/recovery"
+              href="/replan"
               className="flex h-11 w-full items-center justify-center text-[14px] font-medium text-[#6b6578]"
             >
-              Schedule changed? Open recovery
+              Schedule changed? Rebalance your plan
             </Link>
           </div>
         </div>

@@ -63,8 +63,8 @@ export function getFlowHint(
     if (!pathname.startsWith("/recovery")) {
       return {
         message: "Nova is ready to rebuild your plan — no guilt, just clarity.",
-        href: "/recovery",
-        cta: "Open recovery",
+        href: "/replan",
+        cta: "Rebalance plan",
       };
     }
     return null;

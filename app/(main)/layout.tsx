@@ -28,7 +28,9 @@ export default function MainLayout({
       pathname !== "/home" &&
       pathname !== "/calendar" &&
       !pathname.startsWith("/recovery") &&
-      !pathname.startsWith("/recovery-trigger"),
+      !pathname.startsWith("/recovery-trigger") &&
+      !pathname.startsWith("/replan") &&
+      !pathname.startsWith("/unstuck"),
     [pathname]
   );
 

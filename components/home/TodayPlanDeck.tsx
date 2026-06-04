@@ -306,7 +306,7 @@ export function TodayPlanDeck({
             { icon: Coffee, label: "Coffee break", href: "/focus-mode" },
             { icon: Target, label: "Focus mode", href: "/focus-mode" },
             { icon: RefreshCw, label: "Reshuffle plan", href: "/focus" },
-            { icon: LifeBuoy, label: "SOS", href: "/recovery-trigger" },
+            { icon: LifeBuoy, label: "SOS", href: "/unstuck" },
           ].map((action) => (
             <Link
               key={action.label}
